@@ -1,0 +1,7 @@
+[default_config]
+version = "0.10.0"
+assembler = "ca65"
+instruction_set = "6502"
+
+diagnostics = false
+default_diagnostics = false
