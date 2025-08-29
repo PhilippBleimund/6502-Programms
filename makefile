@@ -14,6 +14,14 @@ hello_world_1MHz: OUT=./bin/hello_world_1MHz.out
 hello_world_1MHz:
 	./vasm6502_oldstyle -Fbin -dotdir ./src/hello_world_1MHz.asm -o $(OUT)
 
+decimal_converter: OUT=./bin/decimal_converter.out
+decimal_converter:
+	./vasm6502_oldstyle -Fbin -dotdir ./src/decimal_converter.asm -o $(OUT)
+
+interupt_handler: OUT=./bin/interupt_handler.out
+interupt_handler:
+	./vasm6502_oldstyle -Fbin -dotdir ./src/interupt_handler.asm -o $(OUT)
+
 ifeq ($(PROGRAM),1)
 	minipro -p AT28C256 -w $(OUT)
 endif
