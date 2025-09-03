@@ -22,6 +22,10 @@ interupt_handler: OUT=./bin/interupt_handler.out
 interupt_handler:
 	./vasm6502_oldstyle -Fbin -dotdir ./src/interupt_handler.asm -o $(OUT)
 
+serial_port: OUT=./bin/serial_port.out
+serial_port:
+	./vasm6502_oldstyle -Fbin -dotdir -wdc02 ./src/serial_port.asm -o $(OUT)
+
 ifeq ($(PROGRAM),1)
 	minipro -p AT28C256 -w $(OUT)
 endif
