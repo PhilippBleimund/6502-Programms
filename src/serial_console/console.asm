@@ -119,6 +119,8 @@ startup_message: .asciiz "Welcome to Flip-6502"
 console_line_start: .byte $0d,$0a, "6504$ ", 0
 command_help: .asciiz "help"
 answer_help: .byte $0d,$0a, "Basic Memory viewer and manipulator.", $0d, $0a, "Enter address in 00[.00] format. ([] -> optional)", 0
+command_run: .asciiz "run"
+answer_run: .byte $0d,$0a, "start excecuting from previosly given address", 0
 
 ; converts 4bit (nibble) to ascii hex representation
 ; in A -> out A
@@ -173,8 +175,8 @@ bad:
 
 
 ; sends byte as hex to console
-; does not keep a
 send_hex:
+  pha
   pha
   lsr
   lsr
@@ -186,6 +188,7 @@ send_hex:
   and #$0F        ; keep low nibble
   jsr NIB_TO_ASC
   jsr send_char
+  pla
   rts
 
 
@@ -208,7 +211,7 @@ process_user_line:
   jsr str_cmp         ; compare
   lda #$01
   cmp rtn_val1
-  bne process_user_line_is_hex  ; input can be help or hex
+  bne process_user_line_is_run  ; continue with checking if it is run
 
   lda #<answer_help  ; load string 1
   sta arg_ptr1
@@ -216,6 +219,41 @@ process_user_line:
   sta arg_ptr1 + 1
   jsr send_string
   jmp process_user_line_done
+
+process_user_line_is_run:
+  lda #<command_run   ; load string 1
+  sta arg_ptr1
+  lda #>command_run
+  sta arg_ptr1 + 1
+  lda #<user_line     ; load string 2
+  sta arg_ptr2
+  lda #>user_line
+  sta arg_ptr2 + 1
+  jsr str_cmp         ; compare
+  lda #$01
+  cmp rtn_val1
+  bne process_user_line_is_hex  ; can only be hex
+
+  ; is run command
+  lda #<answer_run   ; load string 1
+  sta arg_ptr1
+  lda #>answer_run
+  sta arg_ptr1 + 1
+  jsr send_string
+
+  ; jump to user given location with current position saved on the stack
+  ; user has to exit with rts
+  ; user_start has to be previosly given
+  lda #>process_user_line_done -1   ; minus one since rts adds one
+  pha
+  lda #<process_user_line_done -1
+  pha
+  jmp (user_start)
+
+  ; not needed since user directly jumps back to process_user_line_done
+  ; just for savety and readability
+  jmp process_user_line_done
+
 
 process_user_line_is_hex:
   ; create 2 byte adress out of 4 hex values
@@ -487,6 +525,15 @@ print_char:
   lda #RS     ; Set RS; Clear RW/E bits
   sta PORTA
   pla
+  rts
+
+  .org $ff00
+test_excecution:
+  pha
+  lda #"H"
+  jsr print_char
+
+  ; pop from stack and send return address
   rts
 
   .org $fffc
